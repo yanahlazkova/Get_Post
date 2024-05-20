@@ -7,7 +7,7 @@ const regname = ref('');
 const regemail = ref('');
 const regpass = ref('');
 const formDataLogIn = new FormData();
-const formDataSignUp = new FormData();
+// const formDataSignUp = new FormData();
 
 const APIurl = 'https://jsonplaceholder.typicode.com/users'
 
@@ -16,12 +16,33 @@ const collectDataLogIn = () => {
   // Собираем данные из полей
   formDataLogIn.set('email', logemail.value);
   formDataLogIn.set('password', logpass.value);
+
+  loginUserGET()
   getDataAllUser()
   getDataUser()
 }
 
-async function getDataAllUser() {
+async function loginUserGET() {
+  const page = '/login';
+  const url = `http://127.0.0.1:5000${page}`;
+  console.log(url);
+  try {
+  const response = await fetch(url, {
+        method: 'GET'
+    });
+    if (!response.ok) {
+      throw new Error('Ошибка при загрузке данных сервера');
+    }
+    const data = await response.json(); // Преобразование ответа в JSON формат
+    console.log('Данные с сервера:', data);
 
+  } catch (error) {
+    console.error('Ошибка при получении данных:', error);
+  }
+}
+
+async function getDataAllUser() {
+  // Выполняет запрос GET на
   const name = 'Ervin Howell'
   const response = await fetch(`${APIurl}`);
   const data = await response.json()
