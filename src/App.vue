@@ -6,35 +6,64 @@ const logpass = ref('');
 const regname = ref('');
 const regemail = ref('');
 const regpass = ref('');
-const formDataLogIn = new FormData();
-// const formDataSignUp = new FormData();
 
 const APIurl = 'https://jsonplaceholder.typicode.com/users'
+const ServerUrl = 'http://127.0.0.1:5000'
 
 const collectDataLogIn = () => {
-
   // Собираем данные из полей
-  formDataLogIn.set('email', logemail.value);
-  formDataLogIn.set('password', logpass.value);
-
-  loginUserGET()
-  getDataAllUser()
-  getDataUser()
+  const formData = new FormData();
+  formData.set('email', logemail.value);
+  formData.set('password', logpass.value); 
+  return formData
 }
 
-async function loginUserGET() {
+const collectDataRegister = () => {
+  // Собираем данные из полей
+  const formData = new FormData();
+  formData.set('email', logemail.value);
+  formData.set('password', logpass.value);
+  formData.set('name', regname.value)
+}
+
+async function sendPOSTRequestLogIn() {
   const page = '/login';
-  const url = `http://127.0.0.1:5000${page}`;
+  const url = `${ServerUrl}${page}`;
   console.log(url);
+  const formData = collectDataLogIn()
   try {
-  const response = await fetch(url, {
-        method: 'GET'
+    const response = await fetch(url, {
+      method: 'POST',
+      body: formData
     });
     if (!response.ok) {
       throw new Error('Ошибка при загрузке данных сервера');
     }
     const data = await response.json(); // Преобразование ответа в JSON формат
-    console.log('Данные с сервера:', data);
+    // console.log(`Данные с сервера:\n${JSON.stringify(data, null, 2)}`);
+    console.log(`Данные с сервера:\n`, data.message,' - ', data.success);
+    console.log('Пользователь', data.user[0])
+
+  } catch (error) {
+    console.error('Ошибка при получении данных:', error);
+  }
+}
+
+async function sendPOSTRequestRegister() {
+  const page = '/Register';
+  const url = `${ServerUrl}${page}`;
+  console.log(url);
+  const formData = collectDataRegister()
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      body: formData
+    });
+    if (!response.ok) {
+      throw new Error('Ошибка при загрузке данных сервера');
+    }
+    const data = await response.json(); // Преобразование ответа в JSON формат
+    console.log(`Данные сервера:\n${JSON.stringify(data, null, 2)}`);
 
   } catch (error) {
     console.error('Ошибка при получении данных:', error);
@@ -97,7 +126,7 @@ async function getDataUser() {
                           id="logpass" autocomplete="off">
                         <i class="input-icon uil uil-lock-alt"></i>
                       </div>
-                      <a href="#" class="btn mt-4" @click="collectDataLogIn">submit</a>
+                      <a href="#" class="btn mt-4" @click="sendPOSTRequestLogIn">submit</a>
                       <p class="mb-0 mt-4 text-center"><a href="#0" class="link">Forgot your password?</a></p>
                     </div>
                   </div>
@@ -121,7 +150,7 @@ async function getDataUser() {
                           id="regpass" autocomplete="off">
                         <i class="input-icon uil uil-lock-alt"></i>
                       </div>
-                      <a href="#" class="btn mt-4" @click="collectDataSignUp">submit</a>
+                      <a href="#" class="btn mt-4" @click="sendPOSTRequestRegister">submit</a>
                     </div>
                   </div>
                 </div>
