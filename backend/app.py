@@ -23,15 +23,18 @@ def login():
         if not email or not password:
             return jsonify({'success': False, 'message': 'Missing email or password'}), 400
         # data_user, status_code = send_GET_Reauest(email, password)
-        response = requests.post(users_url, json={'email': email, 'zipcode': password}, verify=True)
-        print(response.url)
-        if response.status_code == '200':
+        url = f'{users_url}/?email={email}'
+        response = requests.get(url)
+        print(response.status_code)
+        if response.status_code == 200:
             data_user = response.json()
-            # return jsonify({'success': True, 'message': 'Login successful', 'user': str(data_user)}), 200
-            return jsonify({'success': True, 'message': 'Login successful', 'user': data_user}), 200
-                
+            if len(data_user):
+                # return jsonify({'success': True, 'message': 'Login successful', 'user': str(data_user)}), 200
+                return jsonify({'success': True, 'message': 'Login successful', 'user': data_user}), 200
+            else:
+                return jsonify({'success': False, 'message': 'Invalid email or password'}), 400
         else:
-            return jsonify({'success': False, 'message': 'Invalid email or password'})
+            return jsonify({'success': False, 'message': 'Invalid email or password'}), 400
 
 def send_GET_Reauest(email, password):
     """ GET-запрос """

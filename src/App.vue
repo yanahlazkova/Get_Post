@@ -14,7 +14,7 @@ const collectDataLogIn = () => {
   // Собираем данные из полей
   const formData = new FormData();
   formData.set('email', logemail.value);
-  formData.set('password', logpass.value); 
+  formData.set('password', logpass.value);
   return formData
 }
 
@@ -41,8 +41,16 @@ async function sendPOSTRequestLogIn() {
     }
     const data = await response.json(); // Преобразование ответа в JSON формат
     // console.log(`Данные с сервера:\n${JSON.stringify(data, null, 2)}`);
-    console.log(`Данные с сервера:\n`, data.message,' - ', data.success);
-    console.log('Пользователь', data.user[0])
+    if (data.user) {
+      console.log(`Данные с сервера:\n`, data.message, ' - ', data.success);
+      console.log('Пользователь', data.user[0].id)
+      console.log('name', data.user[0].name)
+      console.log('username', data.user[0].username)
+      console.log('phone', data.user[0].phone)
+    }
+    else {
+      console.log('User undefinde');
+    }
 
   } catch (error) {
     console.error('Ошибка при получении данных:', error);
