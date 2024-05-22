@@ -37,7 +37,7 @@ const collectDataRegister = () => {
     errorMessage.value = '';
     infoMessage.value = '';
     return formData
-  } 
+  }
   errorMessage.value = 'Укажите имя, логин и пароль';
   return NaN
 }
@@ -96,7 +96,7 @@ async function sendPOSTRequestLogIn() {
 
 async function sendPOSTRequestRegister() {
   const formData = collectDataRegister()
-    if (formData) {
+  if (formData) {
     const page = '/register';
     const url = `${ServerUrl}${page}`;
     console.log(url);
@@ -108,6 +108,8 @@ async function sendPOSTRequestRegister() {
       if (!response.ok) {
         if (response.status === 400) {
           errorMessage.value = 'Пользователь с указанным email существует\nПерейдите в форму LogIn';
+          return;
+        } else {
           throw new Error('Ошибка при сохранении данных на сервер');
         }
       }
@@ -177,8 +179,10 @@ async function getDataUser() {
                         <i class="input-icon uil uil-lock-alt"></i>
                       </div>
                       <a href="#" class="btn mt-4" @click="sendPOSTRequestLogIn">submit</a>
-                      <p class="error-message" v-if="errorMessageLogIn">{{ errorMessageLogIn }}</p> <!-- Добавлено для отображения сообщения об ошибке -->
-                      <p class="info-message" v-if="infoMessage" v-html="infoMessage"></p> <!-- Добавлено для отображения сообщения о пользователе -->
+                      <p class="error-message" v-if="errorMessageLogIn">{{ errorMessageLogIn }}</p>
+                      <!-- Добавлено для отображения сообщения об ошибке -->
+                      <p class="info-message" v-if="infoMessage" v-html="infoMessage"></p>
+                      <!-- Добавлено для отображения сообщения о пользователе -->
                       <p class="mb-0 mt-4 text-center"><a href="#0" class="link">Forgot your password?</a></p>
                     </div>
                   </div>
@@ -203,8 +207,10 @@ async function getDataUser() {
                         <i class="input-icon uil uil-lock-alt"></i>
                       </div>
                       <a href="#" class="btn mt-4" @click="sendPOSTRequestRegister">submit</a>
-                      <p class="error-message" v-if="errorMessage">{{ errorMessage }}</p> <!-- Добавлено для отображения сообщения об ошибке -->
-                      <p class="info-message" v-if="infoMessage" v-html="infoMessage"></p> <!-- Добавлено для отображения сообщения о пользователе -->
+                      <p class="error-message" v-if="errorMessage">{{ errorMessage }}</p>
+                      <!-- Добавлено для отображения сообщения об ошибке -->
+                      <p class="info-message" v-if="infoMessage" v-html="infoMessage"></p>
+                      <!-- Добавлено для отображения сообщения о пользователе -->
                     </div>
                   </div>
                 </div>
@@ -548,5 +554,4 @@ h6 span {
   font-size: 14px;
   margin-top: 10px;
 }
-
 </style>

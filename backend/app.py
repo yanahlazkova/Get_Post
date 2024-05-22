@@ -39,18 +39,26 @@ def login():
 def signIn():
     print(request.path)
     data = request.form
-    name = data.get('username')
+    data_user = data.to_dict()
+    print(data)
+    # name = data.get('username')
     email = data.get('email')
     password = data.get('password')
     url = f'{users_url}/?email={email}&zipcode={password}'
     if not email or not password:
         return jsonify({'success': False, 'message': 'Missing email or password'}), 400
-    response = requests.get(url)
+    response = requests.post(url, data_user)
+    print(response.status_code)
     if response.status_code == 200:
-        exists_user = response.json()
-        if exists_user:
-            return jsonify({'success': False, 'message': 'User is exists'}), 400
+        return jsonify({'success': False, 'message': 'User is exists'}), 400
 
+    elif response.status_code == 404:
+        response_post = requests.post(users_url, data_user)
+        print(response_post.status_code)
+        if response_post.status_code == 201:
+            return jsonify({'success': True, 'message': 'User added', 'user': data}), 201
+    else:
+        return jsonify({'success': False, 'message': 'User did not add'}), response.status_code
 
 def send_GET_Reauest(email, password):
     """ GET-запрос """
