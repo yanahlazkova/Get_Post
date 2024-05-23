@@ -23,32 +23,26 @@ def home():
 def login():
     print(request.path)
     data = request.form
-    email = data.get('email')
-    password = data.get('password')
-    url = f'{users_url}/?email={email}&zipcode={password}'
-    print(url)
-    if not email or not password:
-        return jsonify({'success': False, 'message': 'Missing email or password'}), 400
+    if not data:
+        return jsonify({'success': False, 'message': 'Invalid data'}), 400
+    required_fields = ['email', 'password']
+    if not all(field in data for field in required_fields):
+        return jsonify({'success': False, 'message': 'Missing required fields'}), 400
+    list_users = load_list_users_from_file() # Load list_users from the JSON file
+    if list_users:
+        user = next((user for user in list_users if user['email'] == data.get('email')), None)
+        # print('found user', user)
+        if user:
+            print("User is exists", user)
+            return jsonify({'success': True, 'message': 'Login successful', 'user': user}), 200
 
-    response = requests.get(url)
-
-    if response.status_code == 200:
-        data_user = response.json()
-        if data_user:
-            return jsonify({'success': True, 'message': 'Login successful', 'user': data_user}), 200
         else:
-            return jsonify({'success': False, 'message': 'Invalid email or password'}), 404
-    else:
-        return jsonify({'success': False, 'message': 'Invalid email or password'}), 400
+            return jsonify({'success': False, 'message': 'User did not exists'}), 404
 
 @app.route('/register', methods=['POST'])
 def signIn():
     print(request.path)
-    # data = request.form
-    # email = data.get('email')
-    # password = data.get('password')
-    # name = data.get('username')
-    data = request.get_json()
+    data = request.form
     print(data)
     # if not email or not password or not name:
     if not data:
@@ -114,6 +108,24 @@ def find_user_by_email(email, users):
     return None
 
 
+def login_server_jsonplaceholder(data):
+    email = data.get('email')
+    password = data.get('password')
+    url = f'{users_url}/?email={email}&zipcode={password}'
+    print(url)
+    if not email or not password:
+        return jsonify({'success': False, 'message': 'Missing email or password'}), 400
+
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        data_user = response.json()
+        if data_user:
+            return jsonify({'success': True, 'message': 'Login successful', 'user': data_user}), 200
+        else:
+            return jsonify({'success': False, 'message': 'Invalid email or password'}), 404
+    else:
+        return jsonify({'success': False, 'message': 'Invalid email or password'}), 400
 
 def register_server_jsonplaceholder(email, password, name):
     """ отправляет запрос регистрации на сервер jsonplaceholder"""

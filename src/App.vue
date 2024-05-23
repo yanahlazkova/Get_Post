@@ -15,31 +15,39 @@ const ServerUrl = 'http://127.0.0.1:5000'
 
 const collectDataLogIn = () => {
   // Собираем данные из полей
-  if (!((logemail.value == '') || (logpass.value == ''))) {
-    const formData = new FormData();
-    formData.set('email', logemail.value);
-    formData.set('password', logpass.value);
-    errorMessageLogIn.value = '';
-    infoMessage.value = '';
-    return formData
+  if (!logemail.value || !logpass.value) {
+    errorMessageLogIn.value = "Укажите логин и пароль";
+    return NaN
   }
-  errorMessageLogIn.value = "Укажите логин и пароль";
-  return NaN
+  const formData = new FormData();
+  formData.set('email', logemail.value);
+  formData.set('password', logpass.value);
+  errorMessageLogIn.value = '';
+  infoMessage.value = '';
+  formData.forEach((value, key) => {
+    console.log(`${key}: ${value}`);
+  });
+  return formData
 }
 
 const collectDataRegister = () => {
+  // Проверяем, что все поля заполнены
+  if (!regemail.value || !regname.value || !regpass.value) {
+    errorMessage.value = 'Все поля должны быть заполнены';
+    return null;
+  }
+
   // Собираем данные из полей
-  if (!((regemail.value == '') | (regpass.value == '') | (regname.value == ''))) {
-    const formData = new FormData();
-    formData.set('email', regemail.value);
-    formData.set('password', regpass.value);
-    formData.set('name', regname.value);
-    errorMessage.value = '';
-    infoMessage.value = '';
-    return formData
-  } 
-  errorMessage.value = 'Укажите имя, логин и пароль';
-  return NaN
+  const formData = new FormData();
+  formData.set('email', regemail.value);
+  formData.set('password', regpass.value);
+  formData.set('name', regname.value);
+  errorMessage.value = '';
+  infoMessage.value = '';
+  formData.forEach((value, key) => {
+    console.log(`${key}: ${value}`);
+  });
+  return formData;
 }
 
 async function sendPOSTRequestLogIn() {
@@ -72,14 +80,14 @@ async function sendPOSTRequestLogIn() {
         errorMessageLogIn.value = data.message;
         return; // Добавлено, чтобы выйти из функции после обработки ошибки
       }
-
+      console.log(data.user)
       console.log(`Данные с сервера:\n`, data.message, ' - ', data.success);
-      console.log('Пользователь', data.user[0].id);
-      console.log('name', data.user[0].name);
-      console.log('username', data.user[0].username);
-      console.log('phone', data.user[0].phone);
+      console.log('id пользователя', data.user.id);
+      console.log('name', data.user.name);
+      console.log('email', data.user.email);
+      // console.log('phone', data.user[0].phone);
 
-      const textInfo = `User name: ${data.user[0].name}<br>Phone number: ${data.user[0].phone}`;
+      const textInfo = `User name: ${data.user.name}<br>Email: ${data.user.email}`;
       infoMessage.value = textInfo;
 
     } catch (error) {
@@ -96,20 +104,24 @@ async function sendPOSTRequestLogIn() {
 
 async function sendPOSTRequestRegister() {
   const formData = collectDataRegister()
-    if (formData) {
+  if (formData) {
     const page = '/register';
     const url = `${ServerUrl}${page}`;
     console.log(url);
     try {
       const response = await fetch(url, {
         method: 'POST',
+
         body: formData
       });
+      console.log(response.body)
       if (!response.ok) {
-        if (response.status === 400) {
+        if (response.status === 409) {
           errorMessage.value = 'Пользователь с указанным email существует\nПерейдите в форму LogIn';
-          throw new Error('Ошибка при сохранении данных на сервер');
+        } if (response.status === 400) {
+          errorMessage.value = response.message
         }
+        throw new Error(`Ошибка при сохранении данных на сервер ${response.status}`);
       }
       const data = await response.json(); // Преобразование ответа в JSON формат
       console.log(`Данные сервера:\n${JSON.stringify(data, null, 2)}`);
@@ -177,8 +189,10 @@ async function getDataUser() {
                         <i class="input-icon uil uil-lock-alt"></i>
                       </div>
                       <a href="#" class="btn mt-4" @click="sendPOSTRequestLogIn">submit</a>
-                      <p class="error-message" v-if="errorMessageLogIn">{{ errorMessageLogIn }}</p> <!-- Добавлено для отображения сообщения об ошибке -->
-                      <p class="info-message" v-if="infoMessage" v-html="infoMessage"></p> <!-- Добавлено для отображения сообщения о пользователе -->
+                      <p class="error-message" v-if="errorMessageLogIn">{{ errorMessageLogIn }}</p>
+                      <!-- Добавлено для отображения сообщения об ошибке -->
+                      <p class="info-message" v-if="infoMessage" v-html="infoMessage"></p>
+                      <!-- Добавлено для отображения сообщения о пользователе -->
                       <p class="mb-0 mt-4 text-center"><a href="#0" class="link">Forgot your password?</a></p>
                     </div>
                   </div>
@@ -203,8 +217,10 @@ async function getDataUser() {
                         <i class="input-icon uil uil-lock-alt"></i>
                       </div>
                       <a href="#" class="btn mt-4" @click="sendPOSTRequestRegister">submit</a>
-                      <p class="error-message" v-if="errorMessage">{{ errorMessage }}</p> <!-- Добавлено для отображения сообщения об ошибке -->
-                      <p class="info-message" v-if="infoMessage" v-html="infoMessage"></p> <!-- Добавлено для отображения сообщения о пользователе -->
+                      <p class="error-message" v-if="errorMessage">{{ errorMessage }}</p>
+                      <!-- Добавлено для отображения сообщения об ошибке -->
+                      <p class="info-message" v-if="infoMessage" v-html="infoMessage"></p>
+                      <!-- Добавлено для отображения сообщения о пользователе -->
                     </div>
                   </div>
                 </div>
@@ -548,5 +564,4 @@ h6 span {
   font-size: 14px;
   margin-top: 10px;
 }
-
 </style>
