@@ -6,8 +6,8 @@ from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
 
 users_url = 'https://jsonplaceholder.typicode.com/users'
-filename = 'database.json'
-# filename = 'users.json'
+# filename = 'database.json'
+filename = 'users.json'
 
 app = Flask(__name__)
 CORS(app)
@@ -44,41 +44,44 @@ def login():
 @app.route('/register', methods=['POST'])
 def signIn():
     print(request.path)
-    data = request.form
-    email = data.get('email')
-    password = data.get('password')
-    name = data.get('username')
-    if not email or not password or not name:
-        return jsonify({'success': False, 'message': 'Missing email or password'}), 400
+    # data = request.form
+    # email = data.get('email')
+    # password = data.get('password')
+    # name = data.get('username')
+    data = request.get_json()
+    print(data)
+    # if not email or not password or not name:
+    if not data:
+        return jsonify({'success': False, 'message': 'Invalid data'}), 400
+    required_fields = ['name', 'email', 'password']
+    if not all(field in data for field in required_fields):
+        return jsonify({'success': False, 'message': 'Missing required fields'}), 400
 
     # register_server_jsonplaceholder(email, password, name)
 
-    register_file_json(email, password, name)
+    success, message, status_code = register_file_json(data)
+    return jsonify({'success': success, 'message': message}), status_code
+
+    # return  jsonify({'success': False, 'message': 'Conflict: User already exists'}), 409
 
 
-def register_file_json(email, password, name):
+def register_file_json(data):
     """ регистрация пользователя в BD json"""
-    list_users = load_users() # Load list_users from the JSON file
+    list_users = load_list_users_from_file() # Load list_users from the JSON file
     id = len(list_users) + 1
     print(len(list_users))
     if list_users:
-        user = next((user for user in list_users if user['email'] == email), None)
-        # user = find_user_by_email(email, list_users)
-        print('finded user', user)
-        if user:
+        # user = next((user for user in list_users if user['email'] == email), None)
+        # print('found user', user)
+        if any(user['email'] == data['email'] for user in list_users):
             print("User already exists")
-            return # jsonify({'success': False, 'message': 'Conflict: User already exists'}), 409
+            return False, "User with this email already exists.", 409
+    list_users.append(data)
 
-    user_data = {
-        "id": id,
-        "name": name,
-        "email": email,
-        "password": password
-    }
-    add_user_to_json(user_data, list_users)
+    return add_user_to_file(list_users)
 
 
-def load_users():
+def load_list_users_from_file():
     """ получает данные из файла json """
     if os.path.exists(filename):
         with open(filename, 'r') as file:
@@ -91,19 +94,25 @@ def load_users():
         return []
 
 
+def add_user_to_file(list_users):
+    """ добавить пользователя в файл json"""
+    print(list_users)
+    try:
+        with open(filename, 'w') as file:
+            # file.write(json.dumps(list_users))
+            json.dump(list_users, file, ensure_ascii=False, indent=4)
+            return True, "User successfully added.", 201
+    except (IOError, TypeError) as e:
+        print(f'Error writing to file: {e}')
+        return False, "Error writing to file.", 500
+
+
 def find_user_by_email(email, users):
     for user in users:
         if user['email'] == email:
             return user
     return None
 
-
-def add_user_to_json(user_data, list_users):
-    """ добавить пользователя в файл json"""
-    list_users.append(user_data)
-    print(list_users)
-    with open(filename, 'w') as file:
-        file.write(json.dumps(list_users))
 
 
 def register_server_jsonplaceholder(email, password, name):
@@ -132,12 +141,14 @@ def send_GET_Request(email, password):
     else:
         return [], response.status_code
 
-# if __name__ == '__main__':
-#     app.run(debug=True)
+if __name__ == '__main__':
+    app.run(debug=True)
 
 # send_GET_Reauest('Shanna@melissa.tv', '13142')
 # send_GET_Reauest('ecovod203@esdl.us', 'asfdasd')
-email = 'Shanna@melissa.tvs'
-password = '111'
-name = "Anna"
-register_file_json(email, password, name)
+# data = {
+#     'email' : 'Shanna@melissa.tv',
+#     'password' : '111',
+#     'name' : "Anna"
+# }
+# register_file_json(data)
