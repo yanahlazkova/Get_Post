@@ -6,8 +6,8 @@ from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
 
 users_url = 'https://jsonplaceholder.typicode.com/users'
-# filename = 'database.json'
-filename = 'users.json'
+filename = 'database.json'
+# filename = 'users.json'
 
 app = Flask(__name__)
 CORS(app)
@@ -30,14 +30,14 @@ def login():
         return jsonify({'success': False, 'message': 'Missing required fields'}), 400
     list_users = load_list_users_from_file() # Load list_users from the JSON file
     if list_users:
-        user = next((user for user in list_users if user['email'] == data.get('email')), None)
-        # print('found user', user)
+        user = next((user for user in list_users if (user['email'] == data.get('email') and user['password'] == data.get('password'))), None)
+        print('found user', user)
         if user:
             print("User is exists", user)
             return jsonify({'success': True, 'message': 'Login successful', 'user': user}), 200
 
         else:
-            return jsonify({'success': False, 'message': 'User did not exists'}), 404
+            return jsonify({'success': False, 'message': 'User not found'}), 404
 
 @app.route('/register', methods=['POST'])
 def signIn():
