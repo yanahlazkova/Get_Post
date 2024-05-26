@@ -54,6 +54,7 @@ def signIn():
     # register_server_jsonplaceholder(email, password, name)
 
     success, message, status_code = register_file_json(data)
+    print("success", success, "status_code", status_code, "message", message)
     return jsonify({'success': success, 'message': message}), status_code
 
     # return  jsonify({'success': False, 'message': 'Conflict: User already exists'}), 409
@@ -63,7 +64,9 @@ def register_file_json(data):
     """ регистрация пользователя в BD json"""
     list_users = load_list_users_from_file() # Load list_users from the JSON file
     id = len(list_users) + 1
+
     print(len(list_users))
+    print(data)
     if list_users:
         # user = next((user for user in list_users if user['email'] == email), None)
         # print('found user', user)

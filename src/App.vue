@@ -9,6 +9,7 @@ const regpass = ref('');
 const errorMessageLogIn = ref('');
 const errorMessage = ref('');
 const infoMessage = ref('');
+const infoMessageLogIn = ref('');
 
 const APIurl = 'https://jsonplaceholder.typicode.com/users'
 const ServerUrl = 'http://127.0.0.1:5000'
@@ -88,7 +89,7 @@ async function sendPOSTRequestLogIn() {
       // console.log('phone', data.user[0].phone);
 
       const textInfo = `User name: ${data.user.name}<br>Email: ${data.user.email}`;
-      infoMessage.value = textInfo;
+      infoMessageLogIn.value = textInfo;
 
     } catch (error) {
       if (error.message === 'Failed to fetch') {
@@ -125,6 +126,7 @@ async function sendPOSTRequestRegister() {
       }
       const data = await response.json(); // Преобразование ответа в JSON формат
       console.log(`Данные сервера:\n${JSON.stringify(data, null, 2)}`);
+      infoMessage.value = data.message
 
     } catch (error) {
       console.error('Ошибка при получении данных:', error);
@@ -191,7 +193,7 @@ async function getDataUser() {
                       <a href="#" class="btn mt-4" @click="sendPOSTRequestLogIn">submit</a>
                       <p class="error-message" v-if="errorMessageLogIn">{{ errorMessageLogIn }}</p>
                       <!-- Добавлено для отображения сообщения об ошибке -->
-                      <p class="info-message" v-if="infoMessage" v-html="infoMessage"></p>
+                      <p class="info-message" v-if="infoMessageLogIn">{{ infoMessageLogIn }}</p>
                       <!-- Добавлено для отображения сообщения о пользователе -->
                       <p class="mb-0 mt-4 text-center"><a href="#0" class="link">Forgot your password?</a></p>
                     </div>
